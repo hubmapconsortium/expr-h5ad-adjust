@@ -2,8 +2,10 @@
 from argparse import ArgumentParser
 from enum import Enum
 from pathlib import Path
+from os import fspath
 
 import anndata
+import muon as mu
 import manhole
 
 
@@ -93,8 +95,8 @@ class Assay(Enum):
     )
 
 
-def main(assay: Assay, expr_h5ad: Path):
-    adata = anndata.read_h5ad(expr_h5ad)
+def main(assay: Assay, expr_matrix: Path):
+    adata = mu.read(f"{fspath(expr_matrix)}/rna") if expr_matrix.suffix == ".h5mu" else anndata.read_h5ad(expr_matrix)
 
     if assay.secondary_analysis_layer in adata.layers:
         print("Replacing AnnData.X with layer", assay.secondary_analysis_layer)
