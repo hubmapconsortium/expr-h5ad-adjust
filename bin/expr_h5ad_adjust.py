@@ -69,6 +69,14 @@ class Assay(Enum):
         False,
         False,
     )
+    CHROMIUM_V3_PROBES = (
+        "10x_v3_probes",
+        "--chromiumV3_probes",
+        AnnDataLayer.SPLICED,
+        False,
+        False,
+        False,
+    )
     SNARESEQ = (
         "snareseq",
         "--snareseq",
@@ -101,6 +109,8 @@ def main(assay: Assay, expr_matrix: Path):
     if assay.secondary_analysis_layer in adata.layers:
         print("Replacing AnnData.X with layer", assay.secondary_analysis_layer)
         adata.X = adata.layers[assay.secondary_analysis_layer]
+    elif assay in {assay.CHROMIUM_V3_PROBES}:
+        print("Using AnnData.X as is")
     else:
         raise ValueError(f"Layer {assay.secondary_analysis_layer} not found")
 
