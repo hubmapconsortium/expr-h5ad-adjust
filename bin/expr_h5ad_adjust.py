@@ -8,6 +8,9 @@ import anndata
 import muon as mu
 import manhole
 
+import scipy
+import pandas as pd
+import gzip
 
 class AnnDataLayer(str, Enum):
     SPLICED = "spliced"
@@ -103,6 +106,26 @@ class Assay(Enum):
     )
 
 
+
+def split_and_save(adata):
+    matrix = adata.X
+    features = pd.Series(adata.var.index)
+    barcodes = pd.Series(adata.obs.index)
+    write_mtx(matrix)
+    write_features(features)
+    write_barcodes(barcodes)
+
+def write_mtx(matrix):
+    with gzip.open(f"counts_matrix.mtx.gz", "wb") as f:
+        scipy.io.mmwrite(f, matrix)
+
+def write_features(features):
+    features.to_csv(f"features.tsv.gz", index=False)
+
+
+def write_barcodes(barcodes):
+    barcodes.to_csv(f"barcodes.tsv.gz", index=False)
+
 def main(assay: Assay, expr_matrix: Path):
     adata = mu.read(f"{fspath(expr_matrix)}/rna") if expr_matrix.suffix == ".h5mu" else anndata.read_h5ad(expr_matrix)
 
@@ -114,6 +137,8 @@ def main(assay: Assay, expr_matrix: Path):
     else:
         raise ValueError(f"Layer {assay.secondary_analysis_layer} not found")
 
+
+    split_and_save(adata)
     adata.write_h5ad("expr.h5ad")
 
 
